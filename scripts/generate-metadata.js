@@ -9,7 +9,7 @@ const MUSIC_DIR = 'E:/Music'
 const OUTPUT_JSON = './public/songs.json'
 const ARTWORK_DIR = './public/artwork'
 // Base URL file audio di Cloudflare R2 (isi setelah setup R2)
-const R2_BASE_URL = 'https://pub-GANTI_DENGAN_ID_R2_KAMU.r2.dev'
+const R2_BASE_URL = 'https://pub-f4d03a030d7f4c209a8d24207670d483.r2.dev'
 
 const AUDIO_EXTS = ['.mp3', '.m4a', '.webm', '.ogg', '.flac', '.wav']
 
