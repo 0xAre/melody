@@ -17,15 +17,15 @@ export default function Library({ songs }) {
   }
 
   return (
-    <div className="p-6 space-y-8">
-      <h1 className="text-2xl font-bold text-white">Your Library</h1>
+    <div className="p-4 md:p-6 space-y-6 md:space-y-8">
+      <h1 className="text-xl md:text-2xl font-bold text-white">Your Library</h1>
 
       {/* System collections */}
       <section>
-        <h2 className="text-lg font-bold text-white mb-3">Koleksi</h2>
+        <h2 className="text-base md:text-lg font-bold text-white mb-3">Koleksi</h2>
         <div className="space-y-2">
           <CollectionRow
-            emoji="💕" name="Liked Songs" subtitle={`${likedSongs.length} lagu`}
+            image="/images/moods/heart.png" name="Liked Songs" subtitle={`${likedSongs.length} lagu`}
             onClick={() => navigate('/liked')}
           />
           {MOODS.map((mood) => {
@@ -34,7 +34,7 @@ export default function Library({ songs }) {
             const meta = getMoodMeta(mood)
             return (
               <CollectionRow
-                key={mood} emoji={meta.emoji}
+                key={mood} image={meta.image}
                 name={mood === '_Unknown' ? 'Lainnya' : mood}
                 subtitle={`${count} lagu`}
                 color={meta.color}
@@ -48,7 +48,7 @@ export default function Library({ songs }) {
       {/* Playlists */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-bold text-white">Playlist Saya</h2>
+          <h2 className="text-base md:text-lg font-bold text-white">Playlist Saya</h2>
           <button onClick={handleNewPlaylist}
             className="text-sm text-primary hover:text-primary-light transition-colors">
             + Buat Baru
@@ -59,7 +59,7 @@ export default function Library({ songs }) {
           : <div className="space-y-2">
               {playlists.map((pl) => (
                 <CollectionRow
-                  key={pl.id} emoji="🎵" name={pl.name} subtitle={`${pl.songs.length} lagu`}
+                  key={pl.id} image="/images/moods/microphone.png" name={pl.name} subtitle={`${pl.songs.length} lagu`}
                   onClick={() => navigate(`/playlist/${pl.id}`)}
                 />
               ))}
@@ -70,17 +70,16 @@ export default function Library({ songs }) {
   )
 }
 
-function CollectionRow({ emoji, name, subtitle, color, onClick }) {
+function CollectionRow({ image, name, subtitle, color, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-surface-3 transition-colors text-left"
+      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-surface-3 transition-colors text-left group"
     >
       <div
-        className="w-12 h-12 rounded-lg flex items-center justify-center text-xl flex-shrink-0"
-        style={{ backgroundColor: color ? color + '33' : '#2a2a2a' }}
+        className="w-12 h-12 flex items-center justify-center flex-shrink-0 relative"
       >
-        {emoji}
+        <img src={image} alt={name} className="w-12 h-12 object-contain mix-blend-screen drop-shadow-md group-hover:scale-105 transition-transform" />
       </div>
       <div>
         <p className="font-medium text-white">{name}</p>

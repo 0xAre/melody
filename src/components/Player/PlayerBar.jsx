@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { useAudio } from '../../hooks/useAudio'
 import { formatTime } from '../../utils/format'
+import MiniPlayer from './MiniPlayer'
 
-const PlayIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+const PlayIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
 )
-const PauseIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+const PauseIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
 )
 const SkipNextIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" /></svg>
@@ -51,6 +52,7 @@ export default function PlayerBar({ onQueueToggle }) {
   const [progress, setProgress] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [expanded, setExpanded] = useState(false)
   const raf = useRef(null)
 
   useEffect(() => {
@@ -79,103 +81,145 @@ export default function PlayerBar({ onQueueToggle }) {
 
   if (!currentSong) {
     return (
-      <div className="h-20 bg-surface-2 border-t border-surface-3 flex items-center justify-center">
-        <p className="text-gray-500 text-sm">Pilih lagu untuk mulai</p>
-      </div>
+      <>
+        <div className="hidden md:flex h-20 bg-surface-2 border-t border-surface-3 items-center justify-center">
+          <p className="text-gray-500 text-sm">Pilih lagu untuk mulai</p>
+        </div>
+      </>
     )
   }
 
   const liked = isLiked(currentSong.id)
 
   return (
-    <div className="h-20 bg-surface-2 border-t border-surface-3 flex items-center px-4 gap-4">
-      {/* Song Info */}
-      <div className="flex items-center gap-3 w-72 flex-shrink-0">
-        <div className="w-14 h-14 rounded bg-surface-3 flex-shrink-0 overflow-hidden">
-          {currentSong.artworkUrl
-            ? <img src={currentSong.artworkUrl} alt="" className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
-          }
+    <>
+      {/* Full Screen Player (mobile only) */}
+      {expanded && <MiniPlayer onClose={() => setExpanded(false)} />}
+
+      {/* Mobile Mini Bar */}
+      <div className="md:hidden fixed bottom-14 left-0 right-0 z-30">
+        <div className="h-0.5 bg-surface-3">
+          <div className="h-full bg-primary transition-all" style={{ width: `${progress * 100}%` }} />
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-white text-ellipsis-1">{currentSong.title}</p>
-          <p className="text-xs text-gray-400 text-ellipsis-1">{currentSong.artist || 'Unknown Artist'}</p>
-        </div>
-        <button
-          onClick={() => toggleLike(currentSong)}
-          className={`ml-1 transition-colors flex-shrink-0 ${liked ? 'text-primary' : 'text-gray-500 hover:text-white'}`}
+        <div
+          className="glass border-t border-white/10 flex items-center px-3 gap-3 h-16 cursor-pointer"
+          onClick={() => setExpanded(true)}
         >
-          <HeartIcon filled={liked} />
-        </button>
-      </div>
-
-      {/* Controls + Progress */}
-      <div className="flex-1 flex flex-col items-center gap-1 max-w-xl mx-auto">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={toggleShuffle}
-            className={`transition-colors ${shuffle ? 'text-primary' : 'text-gray-400 hover:text-white'}`}
-          >
-            <ShuffleIcon />
-          </button>
-          <button onClick={prev} className="text-gray-300 hover:text-white transition-colors">
-            <SkipPrevIcon />
-          </button>
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"
-          >
-            {isPlaying ? <PauseIcon /> : <PlayIcon />}
-          </button>
-          <button onClick={next} className="text-gray-300 hover:text-white transition-colors">
-            <SkipNextIcon />
-          </button>
-          <button
-            onClick={cycleRepeat}
-            className={`transition-colors relative ${repeatMode !== 'off' ? 'text-primary' : 'text-gray-400 hover:text-white'}`}
-          >
-            <RepeatIcon mode={repeatMode} />
-            {repeatMode !== 'off' && (
-              <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
-            )}
-          </button>
-        </div>
-
-        {/* Progress bar */}
-        <div className="flex items-center gap-2 w-full">
-          <span className="text-xs text-gray-500 w-8 text-right tabular-nums">{formatTime(currentTime)}</span>
-          <div
-            className="flex-1 h-1 bg-surface-3 rounded-full cursor-pointer group"
-            onClick={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect()
-              seek((e.clientX - rect.left) / rect.width)
-            }}
-          >
-            <div
-              className="h-full bg-white rounded-full group-hover:bg-primary transition-colors relative"
-              style={{ width: `${progress * 100}%` }}
-            >
-              <span className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow" />
-            </div>
+          <div className="w-11 h-11 rounded-lg bg-surface-3 flex-shrink-0 overflow-hidden">
+            {currentSong.artworkUrl
+              ? <img src={currentSong.artworkUrl} alt="" className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center text-xl">🎵</div>
+            }
           </div>
-          <span className="text-xs text-gray-500 w-8 tabular-nums">{formatTime(duration)}</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold text-white text-ellipsis-1">{currentSong.title}</p>
+            <p className="text-xs text-gray-400 text-ellipsis-1">{currentSong.artist || 'Unknown Artist'}</p>
+          </div>
+          <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => toggleLike(currentSong)}
+              className={`w-10 h-10 flex items-center justify-center transition-colors ${liked ? 'text-primary' : 'text-gray-500'}`}
+            >
+              <HeartIcon filled={liked} />
+            </button>
+            <button onClick={prev} className="w-10 h-10 flex items-center justify-center text-gray-300">
+              <SkipPrevIcon />
+            </button>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center active:scale-95 transition-transform"
+            >
+              {isPlaying ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
+            </button>
+            <button onClick={next} className="w-10 h-10 flex items-center justify-center text-gray-300">
+              <SkipNextIcon />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Volume + Queue */}
-      <div className="flex items-center gap-3 w-48 justify-end flex-shrink-0">
-        <button onClick={onQueueToggle} className="text-gray-400 hover:text-white transition-colors">
-          <QueueIcon />
-        </button>
-        <button onClick={toggleMute} className="text-gray-400 hover:text-white transition-colors">
-          <VolumeIcon muted={isMuted} level={volume} />
-        </button>
-        <input
-          type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="w-24 accent-primary h-1 cursor-pointer"
-        />
+      {/* Desktop Full Player Bar */}
+      <div className="hidden md:flex h-20 bg-surface-2 border-t border-surface-3 items-center px-4 gap-4">
+        <div className="flex items-center gap-3 w-72 flex-shrink-0">
+          <div className="w-14 h-14 rounded bg-surface-3 flex-shrink-0 overflow-hidden">
+            {currentSong.artworkUrl
+              ? <img src={currentSong.artworkUrl} alt="" className="w-full h-full object-cover" />
+              : <div className="w-full h-full flex items-center justify-center text-2xl">🎵</div>
+            }
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white text-ellipsis-1">{currentSong.title}</p>
+            <p className="text-xs text-gray-400 text-ellipsis-1">{currentSong.artist || 'Unknown Artist'}</p>
+          </div>
+          <button
+            onClick={() => toggleLike(currentSong)}
+            className={`ml-1 transition-colors flex-shrink-0 ${liked ? 'text-primary' : 'text-gray-500 hover:text-white'}`}
+          >
+            <HeartIcon filled={liked} />
+          </button>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center gap-1 max-w-xl mx-auto">
+          <div className="flex items-center gap-4">
+            <button onClick={toggleShuffle} className={`transition-colors ${shuffle ? 'text-primary' : 'text-gray-400 hover:text-white'}`}>
+              <ShuffleIcon />
+            </button>
+            <button onClick={prev} className="text-gray-300 hover:text-white transition-colors">
+              <SkipPrevIcon />
+            </button>
+            <button
+              onClick={() => setIsPlaying(!isPlaying)}
+              className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:scale-105 transition-transform"
+            >
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            </button>
+            <button onClick={next} className="text-gray-300 hover:text-white transition-colors">
+              <SkipNextIcon />
+            </button>
+            <button
+              onClick={cycleRepeat}
+              className={`transition-colors relative ${repeatMode !== 'off' ? 'text-primary' : 'text-gray-400 hover:text-white'}`}
+            >
+              <RepeatIcon mode={repeatMode} />
+              {repeatMode !== 'off' && (
+                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+              )}
+            </button>
+          </div>
+          <div className="flex items-center gap-2 w-full">
+            <span className="text-xs text-gray-500 w-8 text-right tabular-nums">{formatTime(currentTime)}</span>
+            <div
+              className="flex-1 h-1 bg-surface-3 rounded-full cursor-pointer group"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect()
+                seek((e.clientX - rect.left) / rect.width)
+              }}
+            >
+              <div
+                className="h-full bg-white rounded-full group-hover:bg-primary transition-colors relative"
+                style={{ width: `${progress * 100}%` }}
+              >
+                <span className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow" />
+              </div>
+            </div>
+            <span className="text-xs text-gray-500 w-8 tabular-nums">{formatTime(duration)}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 w-48 justify-end flex-shrink-0">
+          <button onClick={onQueueToggle} className="text-gray-400 hover:text-white transition-colors">
+            <QueueIcon />
+          </button>
+          <button onClick={toggleMute} className="text-gray-400 hover:text-white transition-colors">
+            <VolumeIcon muted={isMuted} level={volume} />
+          </button>
+          <input
+            type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume}
+            onChange={(e) => setVolume(parseFloat(e.target.value))}
+            className="w-24 accent-primary h-1 cursor-pointer"
+          />
+        </div>
       </div>
-    </div>
+    </>
   )
 }

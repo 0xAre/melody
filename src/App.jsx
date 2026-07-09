@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar/Sidebar'
 import PlayerBar from './components/Player/PlayerBar'
 import QueuePanel from './components/Queue/QueuePanel'
+import BottomNav from './components/BottomNav/BottomNav'
 import Home from './pages/Home'
 import Genre from './pages/Genre'
 import Search from './pages/Search'
@@ -13,6 +14,7 @@ export default function App() {
   const [songs, setSongs] = useState([])
   const [loading, setLoading] = useState(true)
   const [queueOpen, setQueueOpen] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     fetch('/songs.json')
@@ -36,11 +38,21 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="h-screen flex flex-col overflow-hidden bg-surface">
+
+        {/* Desktop layout: sidebar + main content + queue panel */}
         <div className="flex flex-1 overflow-hidden">
-          <Sidebar />
+
+          {/* Sidebar — handles both desktop persistent and mobile drawer */}
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
 
           {/* Main content */}
-          <main className="flex-1 overflow-y-auto bg-gradient-to-b from-surface-2 to-surface">
+          <main
+            className="flex-1 overflow-y-auto bg-gradient-to-b from-surface-2 to-surface
+              pb-32 md:pb-0"
+          >
             <Routes>
               <Route path="/" element={<Home songs={songs} />} />
               <Route path="/search" element={<Search songs={songs} />} />
@@ -52,10 +64,15 @@ export default function App() {
             </Routes>
           </main>
 
-          <QueuePanel open={queueOpen} />
+          {/* Queue panel — desktop side panel / mobile bottom sheet */}
+          <QueuePanel open={queueOpen} onClose={() => setQueueOpen(false)} />
         </div>
 
+        {/* Desktop player bar */}
         <PlayerBar onQueueToggle={() => setQueueOpen((v) => !v)} />
+
+        {/* Mobile bottom navigation */}
+        <BottomNav onMenuOpen={() => setSidebarOpen(true)} />
       </div>
     </BrowserRouter>
   )

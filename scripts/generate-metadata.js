@@ -13,18 +13,23 @@ const R2_BASE_URL = 'https://pub-f4d03a030d7f4c209a8d24207670d483.r2.dev'
 
 const AUDIO_EXTS = ['.mp3', '.m4a', '.webm', '.ogg', '.flac', '.wav']
 
-async function scanDir(dir, baseFolder = '') {
+async function scanDir(dir, topFolder = '', relPath = '') {
   const entries = await readdir(dir, { withFileTypes: true })
   const results = []
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      const sub = await scanDir(fullPath, entry.name)
+      // topFolder hanya diset sekali dari level pertama (mood/genre)
+      const newTop = topFolder || entry.name
+      const newRel = relPath ? `${relPath}/${entry.name}` : entry.name
+      const sub = await scanDir(fullPath, newTop, newRel)
       results.push(...sub)
     } else {
       const ext = path.extname(entry.name).toLowerCase()
       if (AUDIO_EXTS.includes(ext)) {
-        results.push({ fullPath, filename: entry.name, folder: baseFolder || path.basename(dir) })
+        // r2Path: path lengkap relatif dari MUSIC_DIR (untuk URL R2)
+        const r2Path = relPath ? `${relPath}/${entry.name}` : entry.name
+        results.push({ fullPath, filename: entry.name, folder: topFolder, r2Path })
       }
     }
   }
@@ -50,12 +55,11 @@ async function extractMetadata(file) {
       artworkUrl = `/artwork/${artName}`
     }
 
-    const encodedPath = file.folder
-      ? `${encodeURIComponent(file.folder)}/${encodeURIComponent(file.filename)}`
-      : encodeURIComponent(file.filename)
+    // Encode setiap segmen path secara terpisah agar slash tidak di-encode
+    const encodedUrl = file.r2Path.split('/').map(encodeURIComponent).join('/')
 
     return {
-      id: crypto.createHash('md5').update(file.filename).digest('hex'),
+      id: crypto.createHash('md5').update(file.r2Path).digest('hex'),
       title: title || path.basename(file.filename, path.extname(file.filename)),
       artist: artist || '',
       album: album || '',
@@ -63,16 +67,14 @@ async function extractMetadata(file) {
       duration: Math.round(duration),
       folder: file.folder,
       filename: file.filename,
-      url: `${R2_BASE_URL}/${encodedPath}`,
+      url: `${R2_BASE_URL}/${encodedUrl}`,
       artworkUrl,
     }
   } catch (err) {
     console.warn(`Skip ${file.filename}: ${err.message}`)
-    const encodedPath = file.folder
-      ? `${encodeURIComponent(file.folder)}/${encodeURIComponent(file.filename)}`
-      : encodeURIComponent(file.filename)
+    const encodedUrl = file.r2Path.split('/').map(encodeURIComponent).join('/')
     return {
-      id: crypto.createHash('md5').update(file.filename).digest('hex'),
+      id: crypto.createHash('md5').update(file.r2Path).digest('hex'),
       title: path.basename(file.filename, path.extname(file.filename)),
       artist: '',
       album: '',
@@ -80,7 +82,7 @@ async function extractMetadata(file) {
       duration: 0,
       folder: file.folder,
       filename: file.filename,
-      url: `${R2_BASE_URL}/${encodedPath}`,
+      url: `${R2_BASE_URL}/${encodedUrl}`,
       artworkUrl: null,
     }
   }

@@ -34,13 +34,18 @@ export default function Playlist() {
   return (
     <div>
       {/* Header */}
-      <div className="px-6 pt-12 pb-6 bg-gradient-to-b from-indigo-900/60 to-surface flex items-end gap-6">
-        <div className="w-36 h-36 rounded-xl gradient-primary flex items-center justify-center text-5xl shadow-xl flex-shrink-0">
-          {isLiked ? '💕' : '🎵'}
+      <div className="px-4 md:px-6 pt-8 md:pt-12 pb-4 md:pb-6 bg-gradient-to-b from-indigo-900/60 to-surface flex flex-col sm:flex-row items-start sm:items-end gap-4 md:gap-6">
+        <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-xl bg-surface-2 flex items-center justify-center shadow-xl flex-shrink-0 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+          <img 
+            src={isLiked ? '/images/moods/heart.png' : '/images/moods/microphone.png'} 
+            alt="Playlist Cover" 
+            className="w-16 h-16 sm:w-24 sm:h-24 object-contain mix-blend-screen drop-shadow-2xl" 
+          />
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Playlist</p>
-          <h1 className="text-4xl font-bold text-white mt-1">{playlist.name}</h1>
+          <h1 className="text-2xl md:text-4xl font-bold text-white mt-1 text-ellipsis-2">{playlist.name}</h1>
           <p className="text-gray-400 text-sm mt-2">
             {playlist.songs.length} lagu · {totalMin} menit
           </p>
@@ -48,11 +53,11 @@ export default function Playlist() {
       </div>
 
       {/* Actions */}
-      <div className="px-6 py-4 flex items-center gap-4">
+      <div className="px-4 md:px-6 py-4 flex items-center gap-3 md:gap-4">
         <button
           onClick={() => playlist.songs.length && playQueue(playlist.songs, 0)}
           disabled={!playlist.songs.length}
-          className="w-14 h-14 rounded-full gradient-primary flex items-center justify-center text-white text-2xl shadow-lg hover:scale-105 transition-transform disabled:opacity-40"
+          className="w-12 h-12 md:w-14 md:h-14 rounded-full gradient-primary flex items-center justify-center text-white text-xl md:text-2xl shadow-lg hover:scale-105 active:scale-95 transition-transform disabled:opacity-40"
         >
           ▶
         </button>
@@ -64,7 +69,7 @@ export default function Playlist() {
       </div>
 
       {/* Song list */}
-      <div className="px-6 pb-32">
+      <div className="px-2 md:px-6 pb-6">
         <SongList
           songs={playlist.songs}
           onRemove={isLiked ? null : (songId) => removeFromPlaylist(id, songId)}

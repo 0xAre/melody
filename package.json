@@ -23,9 +23,11 @@
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
     "autoprefixer": "^10.4.21",
+    "canvas": "^3.2.3",
     "music-metadata": "^11.0.0",
     "postcss": "^8.5.4",
     "tailwindcss": "^3.4.17",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wrangler": "^4.106.0"
   }
 }

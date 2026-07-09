@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Howl } from 'howler'
 import { usePlayerStore } from '../store/playerStore'
+import { useMediaSession } from './useMediaSession'
 
 export function useAudio() {
   const howlRef = useRef(null)
@@ -14,6 +15,27 @@ export function useAudio() {
     next,
   } = usePlayerStore()
 
+  // ── Audio helpers (dibutuhkan oleh Media Session) ──────────────────────────
+  const seek = (ratio) => {
+    if (!howlRef.current) return
+    const duration = howlRef.current.duration()
+    howlRef.current.seek(ratio * duration)
+  }
+
+  const getSeek = () => {
+    if (!howlRef.current) return 0
+    const duration = howlRef.current.duration()
+    if (!duration) return 0
+    return howlRef.current.seek() / duration
+  }
+
+  const getDuration    = () => howlRef.current?.duration()    || 0
+  const getCurrentTime = () => howlRef.current?.seek()        || 0
+
+  // ── Media Session API (lock screen + notification controls) ────────────────
+  useMediaSession({ getCurrentTime, getDuration, seek })
+
+  // ── Howl: ganti lagu ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!currentSong) return
 
@@ -45,33 +67,19 @@ export function useAudio() {
     return () => howl.unload()
   }, [currentSong?.id])
 
+  // ── Howl: play/pause ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!howlRef.current) return
     if (isPlaying) howlRef.current.play()
     else howlRef.current.pause()
   }, [isPlaying])
 
+  // ── Howl: volume ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (howlRef.current) {
       howlRef.current.volume(isMuted ? 0 : volume)
     }
   }, [volume, isMuted])
-
-  const seek = (ratio) => {
-    if (!howlRef.current) return
-    const duration = howlRef.current.duration()
-    howlRef.current.seek(ratio * duration)
-  }
-
-  const getSeek = () => {
-    if (!howlRef.current) return 0
-    const duration = howlRef.current.duration()
-    if (!duration) return 0
-    return howlRef.current.seek() / duration
-  }
-
-  const getDuration = () => howlRef.current?.duration() || 0
-  const getCurrentTime = () => howlRef.current?.seek() || 0
 
   return { seek, getSeek, getDuration, getCurrentTime }
 }

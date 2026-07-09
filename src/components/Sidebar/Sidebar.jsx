@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+﻿import { NavLink, useNavigate } from 'react-router-dom'
 import { usePlayerStore } from '../../store/playerStore'
 
 const HomeIcon = () => (
@@ -31,8 +31,13 @@ const MusicNoteIcon = () => (
     <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
   </svg>
 )
+const CloseIcon = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+  </svg>
+)
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { playlists, likedSongs, createPlaylist } = usePlayerStore()
   const navigate = useNavigate()
 
@@ -45,21 +50,33 @@ export default function Sidebar() {
     if (name?.trim()) {
       const id = createPlaylist(name.trim())
       navigate(`/playlist/${id}`)
+      onClose?.()
     }
   }
 
-  return (
+  const handleNavClick = () => {
+    onClose?.()
+  }
+
+  const sidebarContent = (
     <aside className="w-64 flex-shrink-0 bg-black flex flex-col h-full">
-      {/* Logo */}
-      <div className="px-6 py-5">
+      {/* Logo + Close button (mobile only) */}
+      <div className="px-6 py-5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-2xl">♪</span>
           <span className="text-xl font-bold text-white tracking-tight">Melody</span>
         </div>
+        {/* Close button only visible in mobile drawer mode */}
+        <button
+          onClick={onClose}
+          className="md:hidden text-gray-400 hover:text-white transition-colors p-1"
+        >
+          <CloseIcon />
+        </button>
       </div>
 
       {/* Main Nav */}
-      <nav className="px-3 space-y-1">
+      <nav className="px-3 space-y-1" onClick={handleNavClick}>
         <NavLink to="/" end className={navClass}>
           <HomeIcon />
           <span>Home</span>
@@ -90,6 +107,7 @@ export default function Sidebar() {
         {/* Liked Songs */}
         <NavLink
           to="/liked"
+          onClick={handleNavClick}
           className={({ isActive }) =>
             `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer
             ${isActive ? 'text-white bg-surface-hover' : 'text-gray-400 hover:text-white'}`
@@ -109,6 +127,7 @@ export default function Sidebar() {
           <NavLink
             key={pl.id}
             to={`/playlist/${pl.id}`}
+            onClick={handleNavClick}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors cursor-pointer
               ${isActive ? 'text-white bg-surface-hover' : 'text-gray-400 hover:text-white'}`
@@ -125,5 +144,29 @@ export default function Sidebar() {
         ))}
       </div>
     </aside>
+  )
+
+  return (
+    <>
+      {/* Desktop: always visible sidebar */}
+      <div className="hidden md:block h-full">
+        {sidebarContent}
+      </div>
+
+      {/* Mobile: drawer overlay */}
+      {isOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm fade-in"
+            onClick={onClose}
+          />
+          {/* Drawer panel */}
+          <div className="relative h-full slide-up" style={{ animation: 'slideLeft 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards' }}>
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   )
 }

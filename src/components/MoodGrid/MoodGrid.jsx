@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { getMoodMeta } from '../../utils/format'
 
 const MOODS = [
-  'Jatuh Cinta', 'Galau', 'Pop Indo', 'Indie Indo',
+  'Jatuh Cinta', 'Galau', 'Bengong', 'Pop Indo', 'Indie Indo',
   'Barat', 'DJ & Remix', 'Lofi', 'Islamic', 'Game OST', '_Unknown',
 ]
 
@@ -26,7 +26,11 @@ export default function MoodGrid({ songs }) {
           >
             <p className="font-bold text-white text-base leading-tight">{mood === '_Unknown' ? 'Lainnya' : mood}</p>
             <p className="text-white/70 text-xs mt-1">{count} lagu</p>
-            <span className="absolute bottom-2 right-3 text-4xl opacity-40">{meta.emoji}</span>
+            <img 
+              src={meta.image} 
+              alt={mood}
+              className="absolute -bottom-1 right-0 w-24 h-24 object-contain opacity-80 group-hover:scale-110 transition-transform mix-blend-screen drop-shadow-2xl" 
+            />
           </button>
         )
       })}
