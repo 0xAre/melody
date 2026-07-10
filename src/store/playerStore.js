@@ -14,6 +14,8 @@ export const usePlayerStore = create(
       repeatMode: 'off',
       volume: 0.8,
       isMuted: false,
+      spatialPreset: 'off',
+      spatialIntensity: 50,
       likedSongs: [],
       recentlyPlayed: [],
       playlists: [],
@@ -81,6 +83,9 @@ export const usePlayerStore = create(
       setVolume: (v) => set({ volume: v, isMuted: v === 0 }),
       toggleMute: () => set((s) => ({ isMuted: !s.isMuted })),
 
+      setSpatialPreset: (preset) => set({ spatialPreset: preset }),
+      setSpatialIntensity: (value) => set({ spatialIntensity: value }),
+
       toggleLike: (song) =>
         set((s) => {
           const isLiked = s.likedSongs.some((l) => l.id === song.id)
@@ -132,6 +137,8 @@ export const usePlayerStore = create(
         volume: s.volume,
         shuffle: s.shuffle,
         repeatMode: s.repeatMode,
+        spatialPreset: s.spatialPreset,
+        spatialIntensity: s.spatialIntensity,
       }),
     }
   )

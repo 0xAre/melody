@@ -13,7 +13,7 @@ export function formatDuration(seconds) {
 export const MOOD_META = {
   'Jatuh Cinta': { color: '#ec4899', image: '/images/moods/heart.png', bg: 'from-pink-500 via-rose-500 to-red-500' },
   'Galau':        { color: '#3b82f6', image: '/images/moods/rose.png', bg: 'from-slate-800 via-blue-900 to-indigo-900' },
-  'Bengong':      { color: '#8b5cf6', image: '/images/moods/bengong.png', bg: 'from-violet-500 via-purple-600 to-indigo-800' },
+  'Bengong':      { color: '#60a5fa', image: '/images/moods/bengong.png', bg: 'from-black via-blue-950 to-slate-900' },
   'Pop Indo':     { color: '#f97316', image: '/images/moods/microphone.png', bg: 'from-orange-500 via-amber-500 to-yellow-500' },
   'Indie Indo':   { color: '#eab308', image: '/images/moods/guitar.png', bg: 'from-yellow-700 via-amber-800 to-stone-800' },
   'Barat':        { color: '#ef4444', image: '/images/moods/vinyl.png', bg: 'from-blue-600 via-indigo-700 to-purple-800' },

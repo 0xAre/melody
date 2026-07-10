@@ -1,8 +1,9 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { useAudio } from '../../hooks/useAudio'
 import { formatTime } from '../../utils/format'
 import MiniPlayer from './MiniPlayer'
+import SpatialControls from './SpatialControls'
 
 const PlayIcon = ({ size = 20 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
@@ -116,12 +117,7 @@ export default function PlayerBar({ onQueueToggle }) {
             <p className="text-xs text-gray-400 text-ellipsis-1">{currentSong.artist || 'Unknown Artist'}</p>
           </div>
           <div className="flex items-center gap-1 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => toggleLike(currentSong)}
-              className={`w-10 h-10 flex items-center justify-center transition-colors ${liked ? 'text-primary' : 'text-gray-500'}`}
-            >
-              <HeartIcon filled={liked} />
-            </button>
+            <SpatialControls buttonClassName="w-10 h-10 flex items-center justify-center" />
             <button onClick={prev} className="w-10 h-10 flex items-center justify-center text-gray-300">
               <SkipPrevIcon />
             </button>
@@ -206,17 +202,18 @@ export default function PlayerBar({ onQueueToggle }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-48 justify-end flex-shrink-0">
+        <div className="flex items-center gap-3 w-52 justify-end flex-shrink-0">
           <button onClick={onQueueToggle} className="text-gray-400 hover:text-white transition-colors">
             <QueueIcon />
           </button>
+          <SpatialControls />
           <button onClick={toggleMute} className="text-gray-400 hover:text-white transition-colors">
             <VolumeIcon muted={isMuted} level={volume} />
           </button>
           <input
             type="range" min="0" max="1" step="0.01" value={isMuted ? 0 : volume}
             onChange={(e) => setVolume(parseFloat(e.target.value))}
-            className="w-24 accent-primary h-1 cursor-pointer"
+            className="w-20 accent-primary h-1 cursor-pointer"
           />
         </div>
       </div>

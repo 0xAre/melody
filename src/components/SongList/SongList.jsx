@@ -88,8 +88,8 @@ export default function SongList({ songs, showIndex = true, showAlbum = false, o
               <div className="flex items-center gap-3 min-w-0">
                 <div className="w-10 h-10 rounded bg-surface-3 flex-shrink-0 overflow-hidden">
                   {song.artworkUrl
-                    ? <img src={song.artworkUrl} alt="" className="w-full h-full object-cover" />
-                  : <img src={meta.image} alt="fallback" className="w-full h-full object-cover mix-blend-screen opacity-70 drop-shadow-md" />
+                    ? <img src={song.artworkUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  : <img src={meta.image} alt="fallback" loading="lazy" decoding="async" className="w-full h-full object-cover mix-blend-screen opacity-70 drop-shadow-md" />
                   }
                 </div>
                 <div className="min-w-0">
@@ -138,8 +138,8 @@ export default function SongList({ songs, showIndex = true, showAlbum = false, o
               {/* Artwork */}
               <div className="w-12 h-12 rounded-lg bg-surface-3 flex-shrink-0 overflow-hidden">
                 {song.artworkUrl
-                  ? <img src={song.artworkUrl} alt="" className="w-full h-full object-cover" />
-                  : <img src={meta.image} alt="fallback" className="w-full h-full object-cover mix-blend-screen opacity-70 drop-shadow-md" />
+                  ? <img src={song.artworkUrl} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" />
+                  : <img src={meta.image} alt="fallback" loading="lazy" decoding="async" className="w-full h-full object-cover mix-blend-screen opacity-70 drop-shadow-md" />
                 }
               </div>
               {/* Info */}

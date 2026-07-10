@@ -1,7 +1,8 @@
-﻿import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePlayerStore } from '../../store/playerStore'
 import { useAudio } from '../../hooks/useAudio'
 import { formatTime } from '../../utils/format'
+import SpatialControls from './SpatialControls'
 
 const PlayIcon = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
@@ -200,7 +201,7 @@ export default function MiniPlayer({ onClose }) {
         </div>
       </div>
 
-      {/* Volume */}
+      {/* Volume + Spatial */}
       <div
         className="px-8 flex items-center gap-3 mb-4"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
@@ -213,6 +214,7 @@ export default function MiniPlayer({ onClose }) {
           onChange={(e) => setVolume(parseFloat(e.target.value))}
           className="flex-1 accent-primary h-1 cursor-pointer"
         />
+        <SpatialControls buttonClassName="w-9 h-9 flex items-center justify-center" />
       </div>
     </div>
   )
