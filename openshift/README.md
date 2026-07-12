@@ -1,4 +1,4 @@
-# Deploy Melody ke OpenShift (Uji Coba)
+# Deploy Melody ke OpenShift (Sekali Apply)
 
 ## 1) Login dan buat project
 
@@ -7,14 +7,31 @@ oc login <API_SERVER> --token=<TOKEN>
 oc new-project melody-trial
 ```
 
-## 2) Buat resource build dan image
+## 2) Sekali apply semua resource (ImageStream + BuildConfig + Deployment + Service + Route)
+
+### Opsi cepat (nilai default)
 
 ```bash
-oc apply -f /home/runner/work/melody/melody/openshift/imagestream.yaml
-oc apply -f /home/runner/work/melody/melody/openshift/buildconfig.yaml
+oc process -f /home/runner/work/melody/melody/openshift/template.yaml | oc apply -f -
 ```
 
-> Kalau ingin pakai fork/branch lain, update `spec.source.git.uri` dan `spec.source.git.ref` pada `/home/runner/work/melody/melody/openshift/buildconfig.yaml`.
+### Opsi parameterized (disarankan)
+
+```bash
+oc process -f /home/runner/work/melody/melody/openshift/template.yaml \
+  -p APP_NAME=melody \
+  -p GIT_URI=https://github.com/0xAre/melody.git \
+  -p GIT_REF=main \
+  -p ROUTE_HOST= \
+  -p REPLICAS=1 \
+  -p REQUEST_CPU=50m \
+  -p REQUEST_MEMORY=128Mi \
+  -p LIMIT_CPU=250m \
+  -p LIMIT_MEMORY=256Mi \
+  | oc apply -f -
+```
+
+> `ROUTE_HOST` boleh dikosongkan agar OpenShift generate host otomatis.
 
 ## 3) Build image dari source repo
 
@@ -22,13 +39,22 @@ oc apply -f /home/runner/work/melody/melody/openshift/buildconfig.yaml
 oc start-build melody --follow
 ```
 
-## 4) Deploy aplikasi + service + route
+Jika `APP_NAME` bukan `melody`, pakai nama sesuai parameter:
 
 ```bash
-oc apply -f /home/runner/work/melody/melody/openshift/deployment.yaml
-oc apply -f /home/runner/work/melody/melody/openshift/service.yaml
-oc apply -f /home/runner/work/melody/melody/openshift/route.yaml
+oc start-build <APP_NAME> --follow
+```
+
+## 4) Tunggu rollout selesai
+
+```bash
 oc rollout status deployment/melody
+```
+
+Jika `APP_NAME` custom:
+
+```bash
+oc rollout status deployment/<APP_NAME>
 ```
 
 ## 5) Verifikasi
@@ -47,6 +73,8 @@ curl -I "$ROUTE_URL/search"
 curl -I "$ROUTE_URL/songs.json"
 ```
 
+Jika `APP_NAME` custom, ganti `route melody` jadi `route <APP_NAME>`.
+
 ## 6) Hardening lanjutan (opsional)
 
 - Tambah `NetworkPolicy` untuk batasi trafik internal.
@@ -58,3 +86,4 @@ curl -I "$ROUTE_URL/songs.json"
 - Build menggunakan `Dockerfile` multi-stage (`node` build + `nginx-unprivileged` runtime).
 - SPA fallback aktif via `try_files $uri $uri/ /index.html;` di `/home/runner/work/melody/melody/openshift/nginx.conf`.
 - Health endpoint tersedia di `/healthz`.
+- Manifest terpisah tetap tersedia di folder `/home/runner/work/melody/melody/openshift/` jika perlu apply per resource.

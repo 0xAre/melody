@@ -1,0 +1,144 @@
+apiVersion: template.openshift.io/v1
+kind: Template
+metadata:
+  name: melody-static-app
+  annotations:
+    description: One-shot OpenShift template for Melody static web app
+labels:
+  app: ${APP_NAME}
+parameters:
+  - name: APP_NAME
+    description: Application name used for all resources
+    value: melody
+  - name: GIT_URI
+    description: Git repository URL
+    value: https://github.com/0xAre/melody.git
+  - name: GIT_REF
+    description: Git branch, tag, or commit
+    value: main
+  - name: ROUTE_HOST
+    description: Optional custom hostname for the route
+    required: false
+    value: ""
+  - name: REPLICAS
+    description: Number of pod replicas
+    value: "1"
+  - name: REQUEST_CPU
+    description: CPU request
+    value: 50m
+  - name: REQUEST_MEMORY
+    description: Memory request
+    value: 128Mi
+  - name: LIMIT_CPU
+    description: CPU limit
+    value: 250m
+  - name: LIMIT_MEMORY
+    description: Memory limit
+    value: 256Mi
+objects:
+  - apiVersion: image.openshift.io/v1
+    kind: ImageStream
+    metadata:
+      name: ${APP_NAME}
+      labels:
+        app: ${APP_NAME}
+
+  - apiVersion: build.openshift.io/v1
+    kind: BuildConfig
+    metadata:
+      name: ${APP_NAME}
+      labels:
+        app: ${APP_NAME}
+    spec:
+      source:
+        type: Git
+        git:
+          uri: ${GIT_URI}
+          ref: ${GIT_REF}
+      strategy:
+        type: Docker
+        dockerStrategy:
+          dockerfilePath: Dockerfile
+      output:
+        to:
+          kind: ImageStreamTag
+          name: ${APP_NAME}:latest
+      triggers:
+        - type: ConfigChange
+
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: ${APP_NAME}
+      labels:
+        app: ${APP_NAME}
+      annotations:
+        image.openshift.io/triggers: |
+          [{"from":{"kind":"ImageStreamTag","name":"${APP_NAME}:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"${APP_NAME}\")].image"}]
+    spec:
+      replicas: ${REPLICAS}
+      selector:
+        matchLabels:
+          app: ${APP_NAME}
+      template:
+        metadata:
+          labels:
+            app: ${APP_NAME}
+        spec:
+          containers:
+            - name: ${APP_NAME}
+              image: image-registry.openshift-image-registry.svc:5000/placeholder/${APP_NAME}:latest
+              ports:
+                - containerPort: 8080
+                  protocol: TCP
+              readinessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8080
+                initialDelaySeconds: 5
+                periodSeconds: 10
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8080
+                initialDelaySeconds: 15
+                periodSeconds: 20
+              resources:
+                requests:
+                  cpu: ${REQUEST_CPU}
+                  memory: ${REQUEST_MEMORY}
+                limits:
+                  cpu: ${LIMIT_CPU}
+                  memory: ${LIMIT_MEMORY}
+
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: ${APP_NAME}
+      labels:
+        app: ${APP_NAME}
+    spec:
+      selector:
+        app: ${APP_NAME}
+      ports:
+        - name: http
+          port: 80
+          targetPort: 8080
+          protocol: TCP
+
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: ${APP_NAME}
+      labels:
+        app: ${APP_NAME}
+    spec:
+      host: ${ROUTE_HOST}
+      to:
+        kind: Service
+        name: ${APP_NAME}
+      port:
+        targetPort: http
+      tls:
+        termination: edge
+        insecureEdgeTerminationPolicy: Redirect
