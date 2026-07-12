@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: melody
+  annotations:
+    image.openshift.io/triggers: |
+      [{"from":{"kind":"ImageStreamTag","name":"melody:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"melody\")].image"}]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: melody
+  template:
+    metadata:
+      labels:
+        app: melody
+    spec:
+      containers:
+        - name: melody
+          image: image-registry.openshift-image-registry.svc:5000/placeholder/melody:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
