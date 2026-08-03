@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+</head>
+<body>
+<script>
+  const h = new Howl({
+    src: ['https://pub-f4d03a030d7f4c209a8d24207670d483.r2.dev/Galau/Ada%20titik-titik%20di%20ujung%20doa.mp3'],
+    html5: true,
+    preload: false
+  });
+  console.log('Does node exist?', !!h._sounds?.[0]?._node);
+  const node = h._sounds?.[0]?._node;
+  if (node) {
+    node.crossOrigin = 'anonymous';
+    console.log('crossOrigin set');
+  }
+  h.load();
+</script>
+</body>
+</html>

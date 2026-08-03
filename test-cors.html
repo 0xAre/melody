@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.3/howler.min.js"></script>
+</head>
+<body>
+  <button id="play">Play</button>
+  <script>
+    document.getElementById('play').onclick = () => {
+      const h = new Howl({
+        src: ['https://pub-f4d03a030d7f4c209a8d24207670d483.r2.dev/Galau/Ada%20titik-titik%20di%20ujung%20doa.mp3?cors=true'],
+        html5: true,
+        preload: false
+      });
+      const node = h._sounds?.[0]?._node;
+      if (node) {
+        node.crossOrigin = 'anonymous';
+      }
+      h.load();
+      h.play();
+      h.on('play', () => {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const src = ctx.createMediaElementSource(node);
+          src.connect(ctx.destination);
+          console.log('Web Audio Connected Successfully');
+        } catch(e) {
+          console.error(e);
+        }
+      });
+    };
+  </script>
+</body>
+</html>
